@@ -4,6 +4,7 @@ import json
 import os
 import random
 import sys
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -28,7 +29,7 @@ except KeyError as e:
 # ---------- Shopee ----------
 def shopee_query(query):
     payload = json.dumps({"query": query}, separators=(",", ":"))
-    ts = str(int(__import__("time").time()))
+    ts = str(int(time.time()))
     sig = hashlib.sha256((APP_ID + ts + payload + SECRET).encode()).hexdigest()
     headers = {
         "Content-Type": "application/json",
@@ -68,7 +69,7 @@ def salvar_postados(lista):
 # ---------- Telegram ----------
 def preco(valor):
     try:
-        return "R$ " + f"{float(valor):.2f}".replace(".", ",")
+        return "R$ " + f"{float(valor):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
     except (TypeError, ValueError):
         return ""
 
@@ -105,14 +106,23 @@ def postar(p):
         raise RuntimeError(resp)
 
 
-# ---------- Execução única ----------
-def aprovado(p, postados):
+# ---------- Seleção ----------
+def separar_palavra(item):
+    """A lista aceita texto simples ou {"q": "geladeira", "preco_min": 1200}."""
+    if isinstance(item, dict):
+        return item["q"], float(item.get("preco_min", 0))
+    return item, 0.0
+
+
+def aprovado(p, vistos, desc_min, nota_min, preco_min):
     try:
-        if str(p["itemId"]) in postados:
+        if str(p["itemId"]) in vistos:
             return False
-        if (p.get("priceDiscountRate") or 0) < CFG["min_desconto"]:
+        if (p.get("priceDiscountRate") or 0) < desc_min:
             return False
-        if float(p.get("ratingStar") or 0) < CFG["min_nota"]:
+        if float(p.get("ratingStar") or 0) < nota_min:
+            return False
+        if float(p.get("priceMin") or 0) < preco_min:
             return False
         return bool(p.get("offerLink") and p.get("imageUrl"))
     except (TypeError, ValueError):
@@ -128,22 +138,46 @@ def main():
 
     postados = carregar_postados()
     vistos = set(postados)
+    meta = int(CFG.get("posts_por_execucao", 1))
+    tentativas = int(CFG.get("tentativas", 15))
+    enviados = 0
+    ultimo_erro = None
 
-    for tentativa in range(1, 9):
-        kw = random.choice(CFG["palavras_chave"]) if CFG["palavras_chave"] else None
-        page = random.randint(1, 3)
-        achados = buscar_produtos(kw, page)
-        candidatos = [p for p in achados if aprovado(p, vistos)]
-        print(f"Tentativa {tentativa}: '{kw}' pag {page} -> {len(candidatos)} aprovados")
-        if candidatos:
-            produto = random.choice(candidatos)
-            postar(produto)
-            postados.append(str(produto["itemId"]))
-            salvar_postados(postados)
-            print("Postado:", produto["productName"][:70])
+    for t in range(1, tentativas + 1):
+        # Na segunda metade das tentativas, afrouxa os filtros para garantir um post
+        flex = t > tentativas // 2
+        desc_min = CFG["desconto_flexivel"] if flex else CFG["min_desconto"]
+        nota_min = CFG["nota_flexivel"] if flex else CFG["min_nota"]
+
+        kw, preco_min = separar_palavra(random.choice(CFG["palavras_chave"]))
+        page = random.randint(1, int(CFG.get("max_paginas", 5)))
+        try:
+            achados = buscar_produtos(kw, page)
+        except Exception as e:  # erro de rede ou da Shopee: tenta outra busca
+            ultimo_erro = e
+            print(f"Tentativa {t}: erro na busca de '{kw}': {e}")
+            continue
+
+        candidatos = [p for p in achados if aprovado(p, vistos, desc_min, nota_min, preco_min)]
+        modo = "flex" if flex else "normal"
+        print(f"Tentativa {t} [{modo}]: '{kw}' pag {page} -> {len(candidatos)} aprovados")
+        if not candidatos:
+            continue
+
+        produto = random.choice(candidatos)
+        postar(produto)
+        vistos.add(str(produto["itemId"]))
+        postados.append(str(produto["itemId"]))
+        salvar_postados(postados)
+        enviados += 1
+        print("Postado:", produto["productName"][:70])
+        if enviados >= meta:
             return
 
-    print("Nenhum produto novo encontrado nesta execução.")
+    if enviados == 0 and ultimo_erro:
+        raise ultimo_erro  # deixa a execução vermelha para você perceber
+    if enviados == 0:
+        print("Nenhum produto novo encontrado nesta execução.")
 
 
 if __name__ == "__main__":
