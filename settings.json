@@ -1,0 +1,24 @@
+{
+  "canal": "@clickachados10",
+  "ordenar_por": 2,
+  "min_desconto": 20,
+  "min_nota": 4.5,
+  "hora_inicio": 8,
+  "hora_fim": 23,
+  "fuso_horario": "America/Sao_Paulo",
+  "palavras_chave": [
+    "fone bluetooth", "smartwatch", "carregador turbo", "cabo usb c", "power bank", "caixa de som", "fone de ouvido gamer", "mouse sem fio", "teclado gamer", "webcam",
+    "suporte celular", "capa de celular", "pelicula celular", "ring light", "tripe celular", "microfone lapela", "hub usb", "pendrive", "cartao de memoria", "controle gamer",
+    "air fryer", "organizador", "utilidades domesticas", "luminaria led", "garrafa termica", "jogo de panelas", "kit facas", "escorredor de louca", "porta temperos", "lixeira cozinha",
+    "tapete sala", "cortina", "jogo de cama", "travesseiro", "cobertor", "toalha de banho", "espelho decorativo", "prateleira", "cabideiro", "sapateira",
+    "liquidificador", "cafeteira", "sanduicheira", "chaleira eletrica", "batedeira", "marmita", "pote hermetico", "tabua de corte", "ralador", "forma de bolo",
+    "tenis masculino", "tenis feminino", "mochila", "relogio masculino", "relogio feminino", "oculos de sol", "bolsa feminina", "carteira masculina", "cinto", "bone",
+    "camiseta", "camisa polo", "bermuda", "calca jeans", "vestido", "conjunto feminino", "pijama", "meia", "cueca", "legging",
+    "perfume", "maquiagem", "skincare", "secador de cabelo", "prancha de cabelo", "kit pincel maquiagem", "protetor solar", "hidratante", "shampoo", "esmalte",
+    "barbeador eletrico", "aparador de barba", "escova eletrica", "depilador", "base facial", "batom", "paleta de sombras", "serum facial", "creme facial", "mascara capilar",
+    "brinquedo", "pelucia", "lego", "boneca", "carrinho de brinquedo", "quebra cabeca", "cama pet", "coleira", "comedouro pet", "arranhador gato",
+    "ferramentas", "furadeira", "parafusadeira", "chave de fenda", "trena", "aspirador de carro", "capa de banco carro", "suporte veicular", "camera de re", "tapete automotivo",
+    "halter", "tapete yoga", "corda de pular", "garrafa academia", "faixa elastica", "bicicleta", "lanterna", "barraca camping", "cadeira de praia", "mala de viagem",
+    "caderno", "mochila escolar", "caneta", "organizador de mesa", "cadeira gamer", "mesa de escritorio", "impressora termica", "agenda", "fita adesiva", "estojo"
+  ]
+}
